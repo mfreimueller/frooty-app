@@ -1,6 +1,7 @@
 package com.mfreimueller.frooty.data
 
 import androidx.datastore.core.DataStore
+import androidx.datastore.dataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -11,15 +12,12 @@ import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
-import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.put
 import org.json.JSONObject
 
-class LoginRepository(baseUrl: String, dataStore: DataStore<Preferences>, requestQueue: RequestQueue) : Repository(baseUrl, dataStore, requestQueue) {
+class LoginRepository(private val serverUrl: String, baseUrl: String, dataStore: DataStore<Preferences>, requestQueue: RequestQueue) : Repository(baseUrl, dataStore, requestQueue) {
 
     companion object {
-        const val LOGIN_URL = "/users/login"
+        const val LOGIN_URL = "/auth/token/"
     }
 
     fun login(username: String, password: String): LiveData<Result<Boolean>> {
@@ -31,31 +29,20 @@ class LoginRepository(baseUrl: String, dataStore: DataStore<Preferences>, reques
 
         val requestObject = JSONObject(credentialsMap)
 
-        val request = object : JsonObjectRequest(Request.Method.POST, baseUrl + LOGIN_URL, requestObject,
+        val request = JsonObjectRequest(Request.Method.POST, serverUrl + LOGIN_URL, requestObject,
             Response.Listener { response ->
-                val success = response.get("success") as Boolean
-                result.value = Result.success(success)
+                val accessToken = response.get("token") as String
+                storeAccessToken(accessToken)
+
+                result.value = Result.success(true)
             },
             Response.ErrorListener { error ->
                 result.value = Result.failure<Boolean>(Exception("Invalid credentials!"))
-            }) {
-            override fun parseNetworkResponse(response: NetworkResponse?): Response<JSONObject?>? {
-                val headers = response?.allHeaders ?: listOf<Header>()
-
-                val csrfTokenCookie = headers.find { it.value.startsWith("csrftoken") }
-                val sessionIdCookie = headers.find { it.value.startsWith("sessionid") }
-
-                if (csrfTokenCookie != null && sessionIdCookie != null) {
-                    setAuthCookies(csrfTokenCookie.value, sessionIdCookie.value)
-                }
-
-                return super.parseNetworkResponse(response)
-            }
-        }
+            })
 
         request.setRetryPolicy(DefaultRetryPolicy(5 * 60 * 1000, // 5 min
             DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT))
 
         requestQueue.add(request)
 

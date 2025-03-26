@@ -9,20 +9,29 @@ import com.mfreimueller.frooty.dataStore
 
 interface AppContainer {
     val loginRepository: LoginRepository
+    val familyRepository: FamilyRepository
     val requestQueue: RequestQueue
 }
 
 class DefaultAppContainer : AppContainer {
-    private val BASE_URL = "http://192.168.178.136:8000/api"
+    private val SERVER_URL = "http://192.168.178.136:8000"
+    private val BASE_URL = "$SERVER_URL/api"
 
+    private var  _requestQueue: RequestQueue? = null
     override val requestQueue: RequestQueue
         get() {
-            val requestQueue = Volley.newRequestQueue(MainActivity.applicationContext().applicationContext)
-            requestQueue.start()
+            if (_requestQueue == null) {
+                _requestQueue = Volley.newRequestQueue(MainActivity.applicationContext().applicationContext)
+                _requestQueue!!.start()
 
-            return requestQueue
+            }
+
+            return _requestQueue!!
         }
 
     override val loginRepository: LoginRepository
-        get() = LoginRepository(BASE_URL, MainActivity.applicationContext().dataStore, requestQueue)
+        get() = LoginRepository(SERVER_URL, BASE_URL, MainActivity.applicationContext().dataStore, requestQueue)
+
+    override val familyRepository: FamilyRepository
+        get() = FamilyRepository(BASE_URL, MainActivity.applicationContext().dataStore, requestQueue)
 }

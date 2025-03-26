@@ -14,32 +14,37 @@ import kotlinx.coroutines.runBlocking
 
 abstract class Repository(protected val baseUrl: String, private val dataStore: DataStore<Preferences>, protected val requestQueue: RequestQueue) {
 
-    private val CSRF_TOKEN_KEY = "csrftoken"
-    private val SESSION_ID_KEY = "sessionid"
+    companion object {
+        val ACCESS_TOKEN_KEY = "ACCESS_TOKEN_KEY"
 
-    fun getAuthCookies(): Pair<String, String> {
-        val csrfToken: String
-        val sessionId: String
+        fun getAccessToken(dataStore: DataStore<Preferences>): String? {
+            val accessToken: String?
 
-        runBlocking {
-            csrfToken = dataStore.data.map { preferences ->
-                preferences[stringPreferencesKey(CSRF_TOKEN_KEY)] ?: ""
-            }.first()
+            runBlocking {
+                accessToken = dataStore.data.map { preferences ->
+                    preferences[stringPreferencesKey(ACCESS_TOKEN_KEY)] ?: ""
+                }.first()
+            }
 
-            sessionId = dataStore.data.map { preferences ->
-                preferences[stringPreferencesKey(SESSION_ID_KEY)] ?: ""
-            }.first()
-
+            return if (accessToken!!.isEmpty()) null else accessToken
         }
-
-        return Pair<String, String>(csrfToken, sessionId)
     }
 
-    fun setAuthCookies(csrfToken: String, sessionId: String) {
+    fun setAuthHeaders(headers: Map<String?, String?>): Map<String?, String?> {
+        val accessToken = getAccessToken(dataStore)
+        if (accessToken == null) {
+            return headers
+        }
+
+        val mutableHeaders = headers.toMutableMap()
+        mutableHeaders.put("Authorization", "Token ${getAccessToken(dataStore)}")
+        return mutableHeaders.toMap()
+    }
+
+    protected fun storeAccessToken(accessToken: String) {
         runBlocking {
-            dataStore.edit { settings ->
-                settings[stringPreferencesKey(CSRF_TOKEN_KEY)] = csrfToken
-                settings[stringPreferencesKey(SESSION_ID_KEY)] = sessionId
+            dataStore.edit { preferences ->
+                preferences[stringPreferencesKey(ACCESS_TOKEN_KEY)] = accessToken
             }
         }
     }

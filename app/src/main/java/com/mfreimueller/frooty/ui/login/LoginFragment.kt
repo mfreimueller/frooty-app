@@ -11,7 +11,12 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
+import com.mfreimueller.frooty.MainActivity
+import com.mfreimueller.frooty.R
 import com.mfreimueller.frooty.dataStore
 import com.mfreimueller.frooty.databinding.FragmentLoginBinding
 
@@ -43,14 +48,13 @@ class LoginFragment : Fragment() {
             val username = usernameTextView.text.toString()
             val password = passwordTextView.text.toString()
 
-            loginViewModel.login(username, password).observeForever { result ->
+            loginViewModel.login(username, password).observe(viewLifecycleOwner, Observer<Result<Boolean>> { result ->
                 result.onSuccess {
-                    // TODO: redirect
-                    val x = 1
+                    MainActivity.navigateToHome()
                 }.onFailure {
                     // TODO: show error message
                 }
-            }
+            })
         }
 
         registerButton.setOnClickListener {
