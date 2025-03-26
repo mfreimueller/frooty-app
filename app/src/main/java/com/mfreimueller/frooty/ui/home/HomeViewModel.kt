@@ -11,6 +11,8 @@ import com.mfreimueller.frooty.data.FamilyRepository
 import com.mfreimueller.frooty.model.Family
 class HomeViewModel(private val familyRepository: FamilyRepository) : ViewModel() {
 
+    var families: List<Family> = mutableListOf()
+
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {

@@ -38,8 +38,10 @@ class HomeFragment : Fragment() {
             override fun onResume(owner: LifecycleOwner) {
                 super.onResume(owner)
 
-                homeViewModel.getAllFamilies().observe(viewLifecycleOwner, Observer<Result<List<Family>>> { families ->
-
+                homeViewModel.getAllFamilies().observe(viewLifecycleOwner, Observer<Result<List<Family>>> { result ->
+                    if (result.isSuccess) {
+                        homeViewModel.families = result.getOrNull()!!
+                    }
                 })
             }
         })

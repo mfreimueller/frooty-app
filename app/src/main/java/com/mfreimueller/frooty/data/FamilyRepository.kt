@@ -13,6 +13,8 @@ import com.android.volley.toolbox.JsonObjectRequest
 import com.mfreimueller.frooty.model.Family
 import kotlinx.serialization.json.Json
 import org.json.JSONObject
+import java.util.logging.Level
+import java.util.logging.Logger
 
 class FamilyRepository(baseUrl: String, dataStore: DataStore<Preferences>, requestQueue: RequestQueue) : Repository(baseUrl, dataStore, requestQueue) {
 
@@ -28,8 +30,8 @@ class FamilyRepository(baseUrl: String, dataStore: DataStore<Preferences>, reque
                 val familiesJson = response.getJSONArray("families")
                 for (i in 0 until familiesJson.length()) {
                     val familyJson = familiesJson.getJSONObject(i)
-                    val family = Json.decodeFromString<Family>(familyJson.toString())
 
+                    val family = Json.decodeFromString<Family>(familyJson.toString())
                     families.add(family)
                 }
 
