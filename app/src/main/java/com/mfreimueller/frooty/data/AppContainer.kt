@@ -10,6 +10,7 @@ import com.mfreimueller.frooty.dataStore
 interface AppContainer {
     val loginRepository: LoginRepository
     val familyRepository: FamilyRepository
+    val mealRepository: MealRepository
     val requestQueue: RequestQueue
 }
 
@@ -34,4 +35,7 @@ class DefaultAppContainer : AppContainer {
 
     override val familyRepository: FamilyRepository
         get() = FamilyRepository(BASE_URL, MainActivity.applicationContext().dataStore, requestQueue)
+
+    override val mealRepository: MealRepository
+        get() = MealRepository(BASE_URL, MainActivity.applicationContext().dataStore, requestQueue)
 }

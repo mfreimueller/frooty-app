@@ -1,0 +1,55 @@
+package com.mfreimueller.frooty.model
+
+import android.annotation.SuppressLint
+import kotlinx.serialization.InternalSerializationApi
+import kotlinx.serialization.Serializable
+
+@SuppressLint("UnsafeOptInUsageError")
+@Serializable
+data class Meal(
+    val id: Int,
+    val name: String,
+    val complexity: Int,
+    val soup: Int,
+    val takeaway: Int,
+    val sweet: Int,
+    val meat: Int,
+    val cold: Int,
+    val remains: Int,
+    val fish: Int,
+    val salad: Int,
+    val fast: Int,
+    val vegetarian: Int,
+    val meatloaf: Int,
+    val noodles: Int,
+    val mushrooms: Int,
+    val broccoli: Int,
+    val shrimps: Int,
+    val zucchini: Int,
+    val ham: Int,
+    val rice: Int,
+    val pizza: Int,
+    val fruits: Int,
+    val gnocci: Int,
+    val spinach: Int,
+    val beans: Int,
+    val sugar: Int,
+    val apples: Int,
+    val cauliflower: Int,
+    val feta: Int,
+    val chicken: Int,
+    val eggs: Int,
+    val tuna: Int,
+    val curd_cheese: Int,
+    val lentils: Int,
+    val cheese: Int,
+    val yeast: Int,
+    val sweet_potatoes: Int,
+    val sausage: Int,
+    val gorgonzola: Int,
+    val pineapple: Int,
+    val potatoes: Int,
+    val dumplings: Int,
+    val cabbage: Int,
+    val tomatoes: Int,
+)

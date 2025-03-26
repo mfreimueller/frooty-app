@@ -40,11 +40,7 @@ class LoginRepository(private val serverUrl: String, baseUrl: String, dataStore:
                 result.value = Result.failure<Boolean>(Exception("Invalid credentials!"))
             })
 
-        request.setRetryPolicy(DefaultRetryPolicy(5 * 60 * 1000, // 5 min
-            DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT))
-
-        requestQueue.add(request)
+        addRequest(request)
 
         return result
     }

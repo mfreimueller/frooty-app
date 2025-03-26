@@ -46,13 +46,7 @@ class FamilyRepository(baseUrl: String, dataStore: DataStore<Preferences>, reque
             }
         }
 
-        request.setRetryPolicy(DefaultRetryPolicy(5 * 60 * 1000, // 5 min
-            DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT))
-
-        requestQueue.add(request)
-
-        return result
+        addRequest(request)
 
         return result
     }

@@ -4,6 +4,8 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.android.volley.DefaultRetryPolicy
+import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.Volley
 import kotlinx.coroutines.flow.Flow
@@ -30,7 +32,15 @@ abstract class Repository(protected val baseUrl: String, private val dataStore: 
         }
     }
 
-    fun setAuthHeaders(headers: Map<String?, String?>): Map<String?, String?> {
+    protected fun <T>addRequest(request: Request<T>) {
+        request.setRetryPolicy(DefaultRetryPolicy(5 * 60 * 1000, // 5 min
+            DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT))
+
+        requestQueue.add(request)
+    }
+
+    protected fun setAuthHeaders(headers: Map<String?, String?>): Map<String?, String?> {
         val accessToken = getAccessToken(dataStore)
         if (accessToken == null) {
             return headers

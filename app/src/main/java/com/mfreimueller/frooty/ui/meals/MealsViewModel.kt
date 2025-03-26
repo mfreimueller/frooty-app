@@ -1,4 +1,4 @@
-package com.mfreimueller.frooty.ui.home
+package com.mfreimueller.frooty.ui.meals
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
@@ -7,26 +7,25 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.mfreimueller.frooty.FrootyApplication
-import com.mfreimueller.frooty.data.FamilyRepository
-import com.mfreimueller.frooty.model.Family
+import com.mfreimueller.frooty.data.MealRepository
+import com.mfreimueller.frooty.model.Meal
 
-class HomeViewModel(private val familyRepository: FamilyRepository) : ViewModel() {
+class MealsViewModel(private val mealRepository: MealRepository) : ViewModel() {
 
-    var families: List<Family> = mutableListOf()
+    var meals: List<Meal> = mutableListOf()
 
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val application = (this[APPLICATION_KEY] as FrootyApplication)
-                val familyRepository = application.container.familyRepository
-                HomeViewModel(familyRepository = familyRepository)
+                val mealRepository = application.container.mealRepository
+                MealsViewModel(mealRepository = mealRepository)
             }
         }
     }
 
-    fun getAllFamilies(): LiveData<Result<List<Family>>> {
-        return familyRepository.getAll()
+    fun getAllMeals(): LiveData<Result<List<Meal>>> {
+        return mealRepository.getAll()
     }
 
 }
-
