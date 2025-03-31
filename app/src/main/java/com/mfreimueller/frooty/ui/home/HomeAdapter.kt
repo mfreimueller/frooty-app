@@ -1,7 +1,9 @@
 package com.mfreimueller.frooty.ui.home
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.TextView
 import androidx.recyclerview.widget.*
 import com.mfreimueller.frooty.R
@@ -26,11 +28,21 @@ class HomeAdapter(private var items: List<HomeListItem>): RecyclerView.Adapter<R
         }
     }
 
+    class AcceptViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
+        private val buttonAccept: Button = itemView.findViewById(R.id.buttonAccept)
+
+        fun bind(accept: HomeListItem.Accept) {
+            buttonAccept.setOnClickListener(accept.listener)
+        }
+    }
+
     companion object {
         private const val ITEM = 0
         private const val WEEKDAY = 1
+        private const val ACCEPT = 2
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     fun update(items: List<HomeListItem>) {
         this.items = items
         notifyDataSetChanged()
@@ -40,6 +52,7 @@ class HomeAdapter(private var items: List<HomeListItem>): RecyclerView.Adapter<R
         return when (items[position]) {
             is HomeListItem.Meal ->  ITEM
             is HomeListItem.Week -> WEEKDAY
+            is HomeListItem.Accept -> ACCEPT
         }
     }
 
@@ -50,9 +63,12 @@ class HomeAdapter(private var items: List<HomeListItem>): RecyclerView.Adapter<R
         return if (viewType == ITEM) {
             val view = LayoutInflater.from(parent.context).inflate(R.layout.item_history, parent, false)
             MealViewHolder(view)
-        } else {
+        } else if (viewType == WEEKDAY) {
             val view = LayoutInflater.from(parent.context).inflate(R.layout.item_week, parent, false)
             WeekdayViewHolder(view)
+        } else {
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_accept, parent, false)
+            AcceptViewHolder(view)
         }
     }
 
@@ -63,12 +79,11 @@ class HomeAdapter(private var items: List<HomeListItem>): RecyclerView.Adapter<R
         when (val item = items[position]) {
             is HomeListItem.Meal -> (holder as MealViewHolder).bind(item)
             is HomeListItem.Week -> (holder as WeekdayViewHolder).bind(item)
+            is HomeListItem.Accept -> (holder as AcceptViewHolder).bind(item)
         }
     }
 
     override fun getItemCount(): Int {
         return items.size
     }
-
-
 }
