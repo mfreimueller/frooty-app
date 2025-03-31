@@ -4,17 +4,11 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.android.volley.DefaultRetryPolicy
-import com.android.volley.Header
-import com.android.volley.NetworkResponse
 import com.android.volley.RequestQueue
 import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
 import com.mfreimueller.frooty.model.Family
 import kotlinx.serialization.json.Json
-import org.json.JSONObject
-import java.util.logging.Level
-import java.util.logging.Logger
 
 class FamilyRepository(baseUrl: String, dataStore: DataStore<Preferences>, requestQueue: RequestQueue) : Repository(baseUrl, dataStore, requestQueue) {
 

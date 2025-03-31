@@ -1,7 +1,5 @@
 package com.mfreimueller.frooty.data
 
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.Volley
 import com.mfreimueller.frooty.MainActivity
@@ -11,6 +9,8 @@ interface AppContainer {
     val loginRepository: LoginRepository
     val familyRepository: FamilyRepository
     val mealRepository: MealRepository
+    val historyRepository: HistoryRepository
+    val suggestRepository: SuggestRepository
     val requestQueue: RequestQueue
 }
 
@@ -41,4 +41,10 @@ class DefaultAppContainer : AppContainer {
 
     override val mealRepository: MealRepository
         get() = MealRepository(BASE_URL, MainActivity.applicationContext().dataStore, requestQueue)
+
+    override val historyRepository: HistoryRepository
+        get() = HistoryRepository(BASE_URL, MainActivity.applicationContext().dataStore, requestQueue)
+
+    override val suggestRepository: SuggestRepository
+        get() = SuggestRepository(BASE_URL, MainActivity.applicationContext().dataStore, requestQueue)
 }
