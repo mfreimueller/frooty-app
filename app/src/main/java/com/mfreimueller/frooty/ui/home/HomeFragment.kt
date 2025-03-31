@@ -98,8 +98,7 @@ class HomeFragment : Fragment() {
         }
 
         // if the next week hasn't been created, we ask the user for permission
-        if (!homeViewModel.isCurrentWeekPlanned) {
-            var shouldGenerate = false
+        if (homeViewModel.isCurrentWeekPlanned) {
             askForEarlyGeneration(requireContext()).observe(viewLifecycleOwner, Observer<Boolean> { shouldGenerate ->
                 if (!shouldGenerate) {
                     swipeRefreshLayout.isRefreshing = false
