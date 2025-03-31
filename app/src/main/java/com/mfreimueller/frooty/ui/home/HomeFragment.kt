@@ -64,6 +64,19 @@ class HomeFragment : Fragment() {
             loadSuggestions()
         }
 
+        recyclerView.adapter = HomeAdapter(listOf())
+
+        homeViewModel.historyItems.observe(viewLifecycleOwner, Observer { items ->
+            (recyclerView.adapter as HomeAdapter).update(homeViewModel.getAdapterListItems {
+                // on clicking 'save' (if available) store the new items
+                homeViewModel.saveNewItems().observe(viewLifecycleOwner, Observer { result ->
+                    if (result.isSuccess) {
+                        homeViewModel.addToHistoryAndDropUnsaved(result.getOrNull()!!)
+                    }
+                })
+            })
+        })
+
         viewLifecycleOwner.lifecycle.addObserver(object: DefaultLifecycleObserver {
             override fun onResume(owner: LifecycleOwner) {
                 super.onResume(owner)
@@ -75,8 +88,7 @@ class HomeFragment : Fragment() {
                         homeViewModel.getHistoryForCurrentFamily().observe(viewLifecycleOwner,
                             Observer<Result<List<History>>> { result ->
                                 if (result.isSuccess) {
-                                    homeViewModel.historyItems = result.getOrNull()!!
-                                    recyclerView.adapter = HomeAdapter(homeViewModel.getAdapterListItems())
+                                    homeViewModel.addToHistoryAndDropUnsaved(result.getOrNull()!!)
                                 }
                             })
                     }
@@ -114,9 +126,7 @@ class HomeFragment : Fragment() {
     private fun generateSuggestions() {
         homeViewModel.generateNextWeek().observe(viewLifecycleOwner, Observer<Result<List<History>>> { result ->
             if (result.isSuccess) {
-                homeViewModel.addToHistory(result.getOrNull()!!)
-                (recyclerView.adapter as HomeAdapter).update(homeViewModel.getAdapterListItems())
-
+                homeViewModel.addToHistoryAndDropUnsaved(result.getOrNull()!!)
                 swipeRefreshLayout.isRefreshing = false
             }
         })

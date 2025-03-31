@@ -1,6 +1,8 @@
 package com.mfreimueller.frooty.ui.home
 
+import android.view.View
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
@@ -23,7 +25,10 @@ import java.time.LocalDate
 class HomeViewModel(private val familyRepository: FamilyRepository, private val historyRepository: HistoryRepository, private val suggestRepository: SuggestRepository) : ViewModel() {
 
     var families: List<Family> = mutableListOf()
-    var historyItems: List<History> = mutableListOf()
+
+    private val _historyItems = MutableLiveData<List<History>>()
+    val historyItems: LiveData<List<History>>
+        get() = _historyItems
 
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
@@ -43,9 +48,9 @@ class HomeViewModel(private val familyRepository: FamilyRepository, private val 
      */
     val newWeekViable: Boolean
         get() {
-            if (historyItems.isEmpty()) return true
+            if (historyItems.value == null || historyItems.value!!.isEmpty()) return true
 
-            val mostRecentDate = historyItems[0].date
+            val mostRecentDate = historyItems.value!![0].date
             val today = LocalDate.now()
 
             // we only planned this week so far
@@ -66,10 +71,10 @@ class HomeViewModel(private val familyRepository: FamilyRepository, private val 
 
     val isCurrentWeekPlanned: Boolean
         get() {
-            if (historyItems.isEmpty()) return false
+            if (historyItems.value == null || historyItems.value!!.isEmpty()) return false
 
             val today = LocalDate.now()
-            val found = historyItems.binarySearch { today.compareWeek(it.date) }
+            val found = historyItems.value!!.binarySearch { today.compareWeek(it.date) }
 
             return found >= 0
         }
@@ -79,9 +84,11 @@ class HomeViewModel(private val familyRepository: FamilyRepository, private val 
             val today = LocalDate.now()
 
             // if we have no history yet, we generate it for the current week
-            if (historyItems.isEmpty()) return today.lastStartOfWeek
+            if (historyItems.value == null || historyItems.value!!.isEmpty()) {
+                return today.lastStartOfWeek
+            }
 
-            val mostRecentDate = historyItems[0].date
+            val mostRecentDate = historyItems.value!![0].date
 
             // If the last planned meal is older than 7 days, we skipped at least one
             // week. Thus we need to use the current week
@@ -92,26 +99,58 @@ class HomeViewModel(private val familyRepository: FamilyRepository, private val 
             }
         }
 
-    fun addToHistory(items: List<History>) {
+    /**
+     * Adds new items to the history, dropping any unsaved items.
+     */
+    fun addToHistoryAndDropUnsaved(items: List<History>) {
         var newHistory = items.toMutableList()
-        newHistory.addAll(historyItems)
 
-        historyItems = newHistory.toList()
+        if (historyItems.value != null && !historyItems.value!!.isEmpty()) {
+
+            val savedItems = historyItems.value!!.toMutableList()
+            val iterator = savedItems.iterator()
+
+            while (iterator.hasNext()) {
+                val item = iterator.next()
+                if (item.id == null) {
+                    iterator.remove()
+                } else {
+                    // we know that null ids are only found at the beginning
+                    // of the list. hence we can exit here
+                    break
+                }
+            }
+
+            newHistory.addAll(savedItems)
+        }
+
+        _historyItems.value = newHistory.toList()
     }
 
-    fun getAdapterListItems(): List<HomeListItem> {
+    fun getAdapterListItems(listener: View.OnClickListener): List<HomeListItem> {
         var homeListItems: MutableList<HomeListItem> = mutableListOf()
-        var lastDate: LocalDate = LocalDate.MIN
+
+        if (historyItems.value == null || historyItems.value!!.isEmpty()) {
+            return homeListItems
+        }
+
+        var lastItem: History? = null
 
         // we can assume that history is ordered by date in descending order
-        historyItems.forEach { history ->
+        historyItems.value!!.forEach { history ->
+            // if we have new items (which don't have ids yet), we add
+            // an accept button below the last one
+            if (lastItem != null && lastItem.id == null && history.id != null) {
+                homeListItems.add(HomeListItem.Accept(listener))
+            }
+
             // we insert a header for each new week
-            if (!history.date.isSameWeek(lastDate)) {
+            if (lastItem == null || !history.date.isSameWeek(lastItem.date)) {
                 homeListItems.add(HomeListItem.Week(history.date.weekAndYearString))
             }
 
             homeListItems.add(HomeListItem.Meal(history.meal, history.date.weekday.take(2)))
-            lastDate = history.date
+            lastItem = history
         }
 
         return homeListItems
@@ -127,5 +166,18 @@ class HomeViewModel(private val familyRepository: FamilyRepository, private val 
 
     fun generateNextWeek(): LiveData<Result<List<History>>> {
         return suggestRepository.suggestWeek(families[0].id, nextUnplannedWeek)
+    }
+
+    fun saveNewItems(): LiveData<Result<List<History>>> {
+        if (historyItems.value == null || historyItems.value!!.isEmpty()) {
+            return MutableLiveData(Result.success(listOf()))
+        }
+
+        val newHistoryItems = historyItems.value!!.filter { it.id == null }
+        if (newHistoryItems.isEmpty()) {
+            return MutableLiveData(Result.success(listOf()))
+        }
+
+        return historyRepository.createHistory(newHistoryItems)
     }
 }
