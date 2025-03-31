@@ -14,7 +14,9 @@ import java.util.logging.Logger
 
 class MealRepository(baseUrl: String, dataStore: DataStore<Preferences>, requestQueue: RequestQueue) : Repository(baseUrl, dataStore, requestQueue) {
 
-    private val GET_ALL_URL = "/meals"
+    companion object {
+        private const val GET_ALL_URL = "/meals"
+    }
 
     fun getAll(): LiveData<Result<List<Meal>>> {
         val result = MutableLiveData<Result<List<Meal>>>()

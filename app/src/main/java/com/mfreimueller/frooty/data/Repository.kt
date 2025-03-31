@@ -17,7 +17,7 @@ import kotlinx.coroutines.runBlocking
 abstract class Repository(protected val baseUrl: String, private val dataStore: DataStore<Preferences>, protected val requestQueue: RequestQueue) {
 
     companion object {
-        val ACCESS_TOKEN_KEY = "ACCESS_TOKEN_KEY"
+        private const val ACCESS_TOKEN_KEY = "ACCESS_TOKEN_KEY" // TODO move to util class?
 
         fun getAccessToken(dataStore: DataStore<Preferences>): String? {
             val accessToken: String?

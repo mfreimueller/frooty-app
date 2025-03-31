@@ -15,8 +15,11 @@ interface AppContainer {
 }
 
 class DefaultAppContainer : AppContainer {
-    private val SERVER_URL = "http://192.168.178.136:8000"
-    private val BASE_URL = "$SERVER_URL/api"
+
+    companion object {
+        private const val SERVER_URL = "http://192.168.178.136:8000"
+        private const val BASE_URL = "$SERVER_URL/api"
+    }
 
     private var  _requestQueue: RequestQueue? = null
     override val requestQueue: RequestQueue

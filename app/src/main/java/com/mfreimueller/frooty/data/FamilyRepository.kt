@@ -18,7 +18,9 @@ import java.util.logging.Logger
 
 class FamilyRepository(baseUrl: String, dataStore: DataStore<Preferences>, requestQueue: RequestQueue) : Repository(baseUrl, dataStore, requestQueue) {
 
-    private val GET_ALL_URL = "/families"
+    companion object {
+        private const val GET_ALL_URL = "/families"
+    }
 
     fun getAll(): LiveData<Result<List<Family>>> {
         val result = MutableLiveData<Result<List<Family>>>()
